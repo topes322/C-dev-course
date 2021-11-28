@@ -46,7 +46,15 @@ void check_error(err);
 error_t parse_command_line_arg(person_t*, int, char*[]);
 
 
-error_t input_name(char*, char*);
+error_t get_name(char*, char*);
+
+error_t get_age(uint8_t*);
+
+error_t get_height(uint16_t*);
+
+error_t get_weight(uint16_t*);
+
+error_t get_gender(gender_t*);
 
 
 int8_t validation_acl_string(char *, char *);
@@ -56,7 +64,6 @@ int8_t validation_acl_string(char *, char *);
 int main(int argc, char* argv[])
 {
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
-
 
     //__CHAR16_TYPE__ q = L'a';
     //printf("%u\n", q);
@@ -75,10 +82,9 @@ int main(int argc, char* argv[])
     {
         error_t err = get_personal_data(&person);
         if(err != SUCSESS) check_error(err);
-
-        print_personal_data(&person);
     }
 
+    print_personal_data(&person);
 
     /*
     // unicode для кирилицы 
@@ -105,57 +111,28 @@ error_t get_personal_data(person_t* data)
     error_t err = SUCSESS;
 
 
-    err = input_name(data->name, "Имя");
+    err = get_name(data->name, "Имя");
     if(err != 0) return err;
 
-    err = input_name(data->surname, "Фамилия");
+    err = get_name(data->surname, "Фамилия");
     if(err != 0) return err;
 
-    //
-    
-    do
-    {
-        printf("Возраст(целое число от 18 до 125): ");
-        if(scanf("%"PRIu8, &data->age) != 1) return PARSE_ERROR;
-
-        if(data->age < 18 || data->age > 125)
-            printf("\nВведен некорректный возраст. Вы ввели %"PRIu8"\nНеобходимо ввести возраст от 18 до 125 лет\nПопробуйте снова\n", data->age);
-
-    } while (data->age < 18 || data->age > 125);
+    //   
+    err = get_age(&data->age);
+    if(err != 0) return err;
     
     //
-    do
-    {
-        printf("Рост см(целое число от 10 до 500): ");
-        if(scanf("%"PRIu16, &data->height) != 1) return PARSE_ERROR;
-
-        if(data->height < 10 || data->height > 500)
-            printf("\nВведен некорректный рост. Вы ввели %"PRIu8"\nНеобходимо ввести рост от 10 до 500\nПопробуйте снова\n", data->height);
-
-    } while(data->height < 10 || data->height > 500);
-
-    //
-
-    do
-    {
-        printf("Вес кг(целое число от 10 до 500): ");
-        if(scanf("%"PRIu16, &data->weight) != 1) return PARSE_ERROR;
-
-        if(data->weight < 10 || data->weight > 500)
-                printf("\nВведен некорректный вес. Вы ввели %"PRIu8"\nНеобходимо ввести вес от 10 до 500\nПопробуйте снова\n", data->weight);
-
-    } while(data->weight < 10 || data->weight > 500);
-
-    //
+    err = get_height(&data->height);
+    if(err != 0) return err;
     
-    do
-    {   
-        printf("Выберите ваш пол(Мужской - 1, Женский - 2): ");
-        data->gender = UNDEFINED;
-        if(scanf("%"PRIu8, &data->gender) != 1) return PARSE_ERROR;
-        if(data->gender > FEMALE)
-            printf("\nНекорректно введены данные. Попробуйте снова.\nМужской - 1, Женский - 2\nВы ввели: %u\n", data->gender);
-    } while(data->gender > FEMALE);
+    //
+    err = get_weight(&data->weight);
+    if(err != 0) return err;
+    
+    //
+    err = get_gender(&data->gender);
+    if(err != 0) return err;
+    
 
     return SUCSESS;
 }
@@ -167,7 +144,7 @@ error_t get_personal_data(person_t* data)
 error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 {
 
-    const char* short_options = "n:s:a:h:w:g";
+    const char* short_options = "n:s:a:h:w:g:";
     
 	const struct option long_options[] = {
 		{"name", required_argument, NULL, 'n'},
@@ -176,15 +153,15 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
         {"height", required_argument, NULL, 'h'},
         {"weight", required_argument, NULL, 'w'},
         {"gender", required_argument, NULL, 'g'},
-        //{"help", no_argument, NULL, 1},
+        {"help", no_argument, NULL, 1},
 		{NULL, 0, NULL, 0}
 	};
 
-	int rez;
+	int option;
 	int option_index;
 
     //https://firststeps.ru/linux/r.php?11
-    while ((rez = getopt_long(  argc, argv, 
+    while ((option = getopt_long(  argc, argv, 
                                 short_options,
 		                        long_options, 
                                 &option_index)) != -1)
@@ -192,14 +169,12 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 
         //printf("rez = %d\noption_index = %d\n", rez, option_index);
 
-		switch(rez){
+		switch(option){
 			case 'n': // name
             {
-                printf("\n-n\n");
-				if (optarg != NULL)
+				if (optarg)
                 {
                     validation_acl_string(p->name, optarg);
-                    printf("p->name = %s\n", p->name);
                 }
                 else
                 {
@@ -211,11 +186,9 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 
 			case 's': // surname
             {
-                printf("\n-s\n");
-				if (optarg != NULL)
+				if (optarg)
                 {
                     validation_acl_string(p->surname, optarg);
-                    printf("p->surname = %s\n", p->surname);
                 }
                 else
                 {
@@ -227,13 +200,12 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 	
 			case 'a': // age
             {
-                printf("-a\n");
-                if (optarg != NULL)
+                if (optarg)
                 {
                     int i = 0; 
                     uint8_t flag = 0;
                     while(optarg[i++] != '\0') 
-                        if(optarg[i] < '0' && optarg[i] < '9') 
+                        if(optarg[i] < '0' && optarg[i] > '9') 
                         { 
                             printf("Недопустимые символы\n");
                             flag++;
@@ -254,16 +226,79 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 
             case 'h': // height
             {
+                if(optarg)
+                {
+                    int i = 0; 
+                    uint8_t flag = 0;
+                    while(optarg[i++] != '\0') 
+                        if(optarg[i] < '0' && optarg[i] > '9') 
+                        { 
+                            printf("Недопустимые символы\n");
+                            flag++;
+                            break;
+                        }
+
+                    if(flag) break;
+
+                    p->height = (uint16_t)atoi(optarg);
+                }
+                else
+                {
+                    printf("found size without value\n");
+                    return NULL_PTR_ERROR;
+                }
                 break;
             };
 
             case 'w': // weight
             {
+                if(optarg)
+                {
+                    int i = 0; 
+                    uint8_t flag = 0;
+                    while(optarg[i++] != '\0') 
+                        if(optarg[i] < '0' && optarg[i] > '9') 
+                        { 
+                            printf("Недопустимые символы\n");
+                            flag++;
+                            break;
+                        }
+
+                    if(flag) break;
+
+                    p->weight = (uint16_t)atoi(optarg);
+                }
+                else
+                {
+                    printf("found size without value\n");
+                    return NULL_PTR_ERROR;
+                }
                 break;
             };
 
             case 'g': // gender
             {
+                if (optarg)
+                {
+                    int i = 0; 
+                        uint8_t flag = 0;
+                        while(optarg[i++] != '\0') 
+                            if(optarg[i] < '0' && optarg[i] > '9') 
+                            { 
+                                printf("Недопустимые символы\n");
+                                flag++;
+                                break;
+                            }
+
+                        if(flag) break;
+
+                        p->gender = (uint8_t)atoi(optarg);
+                }
+                else
+                {
+                    printf("found size without value\n");
+                    return NULL_PTR_ERROR;
+                }
                 break;
             };
             
@@ -289,13 +324,47 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 		};
 	};
 
+    error_t err = SUCSESS;
     // check parse args
-    if(p->name[0] = '\0');
-    if(p->surname[0] = '\0');
-    if(p->age = 0);
-    if(p->height = 0);
-    if(p->weight = 0);
-    if(p->gender = UNDEFINED);
+    if(p->name[0] == '\0')
+    {
+        printf("enter name\n");
+        err = get_name(p->name, "Имя");
+
+        if(err != SUCSESS) check_error(err);
+    }
+
+    if(p->surname[0] == '\0')
+    {
+        printf("enter surname\n");
+        err = get_name(p->surname, "Фамилия");
+
+        if(err != SUCSESS) check_error(err);
+    }
+
+    if(p->age == 0) 
+    {
+        err = get_age(&p->age);
+        if(err != SUCSESS) check_error(err);
+    }
+
+    if(p->height == 0) 
+    {   
+        err = get_height(&p->height);
+        if(err != SUCSESS) check_error(err);
+    }
+
+    if(p->weight == 0) 
+    {
+        err = get_weight(&p->weight);
+        if(err != SUCSESS) check_error(err);
+    }
+
+    if(p->gender == UNDEFINED) 
+    {
+        err = get_gender(&p->gender);
+        if(err != SUCSESS) check_error(err);
+    }
 
     return SUCSESS;
 }
@@ -303,10 +372,6 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 
 int8_t validation_acl_string(char * name, char * optarg)
 {
-
-    printf("%s\n", optarg);
-    printf("strlen(optarg) = %d\nMAX_LEN = %u\n", strlen(optarg), MAX_LEN - 2);
-
     uint8_t flag = 0;
     if(strlen(optarg) > MAX_LEN - 2) flag++;
 
@@ -328,7 +393,7 @@ int8_t validation_acl_string(char * name, char * optarg)
     return flag;
 }
 
-error_t input_name(char* name, char* n)
+error_t get_name(char* name, char* n)
 {
     uint8_t err = SUCSESS;
     printf("%s(латиницей, не более %u смволов): ", n, MAX_LEN - 2);
@@ -379,8 +444,65 @@ error_t input_name(char* name, char* n)
         if(flag == 0) break;
         flag = 0;
     } // while(1)
+    return SUCSESS;
 }
 
+
+error_t get_age(uint8_t * age)
+{
+    do
+    {
+        printf("Возраст(целое число от 18 до 125): ");
+        if(scanf("%"PRIu8, age) != 1) return PARSE_ERROR;
+        if(*age < 18 || *age > 125)
+            printf("\nВведен некорректный возраст. Вы ввели %"PRIu8"\nНеобходимо ввести возраст от 18 до 125 лет\nПопробуйте снова\n", *age);
+
+    } while (*age < 18 || *age > 125);
+    return SUCSESS;
+}
+
+
+error_t get_height(uint16_t * height)
+{
+    do
+    {
+        printf("Рост см(целое число от 10 до 500): ");
+        if(scanf("%"PRIu16, height) != 1) return PARSE_ERROR;
+
+        if(*height < 10 || *height > 500)
+            printf("\nВведен некорректный рост. Вы ввели %"PRIu8"\nНеобходимо ввести рост от 10 до 500\nПопробуйте снова\n", *height);
+
+    } while(*height < 10 || *height > 500);
+    return SUCSESS;
+}
+
+
+error_t get_weight(uint16_t * weight)
+{
+    do
+    {
+        printf("Вес кг(целое число от 10 до 500): ");
+        if(scanf("%"PRIu16, weight) != 1) return PARSE_ERROR;
+
+        if(*weight < 10 || *weight > 500)
+                printf("\nВведен некорректный вес. Вы ввели %"PRIu8"\nНеобходимо ввести вес от 10 до 500\nПопробуйте снова\n", *weight);
+
+    } while(*weight < 10 || *weight > 500);
+    return SUCSESS;
+}
+
+error_t get_gender(gender_t * gender)
+{
+    do
+    {   
+        printf("Выберите ваш пол(Мужской - 1, Женский - 2): ");
+        *gender = UNDEFINED;
+        if(scanf("%"PRIu8, gender) != 1) return PARSE_ERROR;
+        if(*gender > FEMALE)
+            printf("\nНекорректно введены данные. Попробуйте снова.\nМужской - 1, Женский - 2\nВы ввели: %u\n", *gender);
+    } while(*gender > FEMALE);
+    return SUCSESS;
+}
 
 
 error_t validation_string(char * str)
@@ -388,6 +510,8 @@ error_t validation_string(char * str)
     if(!str) return NULL_PTR_ERROR;
 
     if(scanf("%11s", str) != 1) return PARSE_ERROR;
+
+    return SUCSESS;
 }
 
 
@@ -420,6 +544,8 @@ error_t print_personal_data(const person_t * p)
         printf("Неизвестно\n");
         break;
     }
+
+    return SUCSESS;
 }
 
 // exit on error, print type error
