@@ -1,63 +1,22 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <getopt.h>
+#include <getopt.h> 
 
-#define MAX_LEN 12U
-
-typedef enum error_t
-{
-    SUCSESS,
-    NULL_PTR_ERROR,
-    PARSE_ERROR, 
-    PARSE_ACL_ERROR
-} error_t;
-
-
-typedef enum gender_t {
-    UNDEFINED,
-    MALE,
-    FEMALE
-} gender_t;
-
-
-typedef struct person_t
-{
-    char name[MAX_LEN];
-    char surname[MAX_LEN]; 
-    uint8_t age;
-    uint16_t height;
-    uint16_t weight; 
-    gender_t gender;
-} person_t;
+#include "types.h"
+#include "getters.h"
+#include "validation_str.h"
 
 
 
-error_t print_personal_data(const person_t*);
 
-error_t get_personal_data(person_t*);
+error_t print_personal_data( const person_t* const );
 
-error_t validation_string(char*);
-
-void check_error(err);
 
 error_t parse_command_line_arg(person_t*, int, char*[]);
 
 
-error_t get_name(char*, char*);
-
-error_t get_age(uint8_t*);
-
-error_t get_height(uint16_t*);
-
-error_t get_weight(uint16_t*);
-
-error_t get_gender(gender_t*);
-
-
-error_t validation_acl_string(char *, char *);
+void check_error(error_t const);
 
 
 
@@ -81,41 +40,6 @@ int main(int argc, char* argv[])
     print_personal_data(&person);
 
     return 0;
-}
-
-
-
-// user enter data into struct person_t
-error_t get_personal_data(person_t* data)
-{
-    if(!data) return NULL_PTR_ERROR;
-    error_t err = SUCSESS;
-
-
-    err = get_name(data->name, "Имя");
-    if(err != 0) return err;
-
-    err = get_name(data->surname, "Фамилия");
-    if(err != 0) return err;
-
-    //   
-    err = get_age(&data->age);
-    if(err != 0) return err;
-    
-    //
-    err = get_height(&data->height);
-    if(err != 0) return err;
-    
-    //
-    err = get_weight(&data->weight);
-    if(err != 0) return err;
-    
-    //
-    err = get_gender(&data->gender);
-    if(err != 0) return err;
-    
-
-    return SUCSESS;
 }
 
 
@@ -306,8 +230,8 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
             {
 				printf( "Можете запустить программу без аргументов и ввести данные вручную\n"
                         "Список доступных аргументов командной строки:\n"
-                        "-n YourName или --name YourName , имя латиницей не более %u символов\n"
-                        "-s YourSurname или --surname YourSurname , фамилия латинцей не более %u символов\n"
+                        "-n YourName или --name YourName , имя латиницей не более %"PRIu8" символов\n"
+                        "-s YourSurname или --surname YourSurname , фамилия латинцей не более %"PRIu8" символов\n"
                         "-a 20 или --age 20 , ваш возраст, от 18 до 125 лет\n"
                         "-h 180 или --height 180 , ваш рост, целое число, от 10 до 500\n"
                         "-w 80 или --weight 80 , ваш вес, целое число, от 10 до 500\n"
@@ -372,150 +296,17 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 }
 
 
-error_t validation_acl_string(char * name, char * optarg)
-{
-    if(strlen(optarg) > MAX_LEN - 2) 
-    {
-        printf("Поля name и surname не более %u символов\n", MAX_LEN - 2);
-        return PARSE_ACL_ERROR;
-    }
-
-    uint8_t i = 0;
-    while(optarg[i] != '\0')
-    {
-        if(!(optarg[i] >= 'a' && optarg[i] <= 'z') 
-        && !(optarg[i] >= 'A' && optarg[i] <= 'Z'))
-        {
-            printf("Используйте только символы латиницы для полей name и surname.\n");
-            return PARSE_ACL_ERROR;
-        }
-        i++;
-    }
-    
-    strcpy(name, optarg);
-        
-    return SUCSESS;
-}
-
-error_t get_name(char* name, char* n)
-{
-    uint8_t err = SUCSESS;
-    printf("%s(латиницей, не более %u смволов): ", n, MAX_LEN - 2);
-    while (1)
-    {
-
-        err = validation_string(name);
-        if(!err) return err;
-
-        uint8_t flag = 0;
-
-        if(name[MAX_LEN - 2] != '\0') 
-        {
-            flag++;
-            printf("Допустимое число символов не более %u. Попробуйте еще раз.\n", MAX_LEN - 2 );
-            uint8_t i = 0;
-            while (name[i] != '\0') name[i++] = '\0';
-        }
-
-        uint8_t i = 0;
-        while(name[i] != '\0')
-        {
-
-            if(!(name[i] >= 'a' && name[i] <= 'z') 
-            && !(name[i] >= 'A' && name[i] <= 'Z'))
-            {
-               flag++;
-               printf("Испльзуйте только символы латиницы. Попробуйте еще раз.\n%s(не более %u смволов): ", n, MAX_LEN - 2);
-               break;
-            }
-            i++;
-        }
-
-        if(flag == 0) break;
-        flag = 0;
-    } // while(1)
-    return SUCSESS;
-}
-
-
-error_t get_age(uint8_t * age)
-{
-    do
-    {
-        printf("Возраст(целое число от 18 до 125): ");
-        if(scanf("%"PRIu8, age) != 1) return PARSE_ERROR;
-        if(*age < 18 || *age > 125)
-            printf("\nВведен некорректный возраст. Вы ввели %"PRIu8"\nНеобходимо ввести возраст от 18 до 125 лет\nПопробуйте снова\n", *age);
-
-    } while (*age < 18 || *age > 125);
-    return SUCSESS;
-}
-
-
-error_t get_height(uint16_t * height)
-{
-    do
-    {
-        printf("Рост см(целое число от 10 до 500): ");
-        if(scanf("%"PRIu16, height) != 1) return PARSE_ERROR;
-
-        if(*height < 10 || *height > 500)
-            printf("\nВведен некорректный рост. Вы ввели %"PRIu8"\nНеобходимо ввести рост от 10 до 500\nПопробуйте снова\n", *height);
-
-    } while(*height < 10 || *height > 500);
-    return SUCSESS;
-}
-
-
-error_t get_weight(uint16_t * weight)
-{
-    do
-    {
-        printf("Вес кг(целое число от 10 до 500): ");
-        if(scanf("%"PRIu16, weight) != 1) return PARSE_ERROR;
-
-        if(*weight < 10 || *weight > 500)
-                printf("\nВведен некорректный вес. Вы ввели %"PRIu8"\nНеобходимо ввести вес от 10 до 500\nПопробуйте снова\n", *weight);
-
-    } while(*weight < 10 || *weight > 500);
-    return SUCSESS;
-}
-
-error_t get_gender(gender_t * gender)
-{
-    do
-    {   
-        printf("Выберите ваш пол(Мужской - 1, Женский - 2): ");
-        *gender = UNDEFINED;
-        if(scanf("%"PRIu8, gender) != 1) return PARSE_ERROR;
-        if(*gender > FEMALE)
-            printf("\nНекорректно введены данные. Попробуйте снова.\nМужской - 1, Женский - 2\nВы ввели: %u\n", *gender);
-    } while(*gender > FEMALE);
-    return SUCSESS;
-}
-
-
-error_t validation_string(char * str)
-{
-    if(!str) return NULL_PTR_ERROR;
-    // MAX_LEN - 1
-    if(scanf("%11s", str) != 1) return PARSE_ERROR;
-
-    return SUCSESS;
-}
-
-
-
 // print data struct person_t
-error_t print_personal_data(const person_t * p)
+error_t print_personal_data(const person_t * const p)
 {
     if(!p) return NULL_PTR_ERROR;
+
     printf("\nИмя: %s\n", p->name);
     printf("Фамилия: %s\n", p->surname);
 
-    printf("Возраст: %hhu\n" , p->age);
-    printf("Рост: %hu\n" , p->height);
-    printf("Вес: %hu\n", p->weight);
+    printf("Возраст: %"PRIu8"\n" , p->age);
+    printf("Рост: %"PRIu16"\n" , p->height);
+    printf("Вес: %"PRIu16"\n", p->weight);
 
     printf("Пол: ");
     switch (p->gender)
@@ -539,7 +330,7 @@ error_t print_personal_data(const person_t * p)
 }
 
 // exit on error, print type error
-void check_error(error_t err)
+void check_error(error_t const err)
 {
     switch (err)
     {
