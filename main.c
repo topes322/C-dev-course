@@ -227,7 +227,9 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                         printf("Рост от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
+                    printf("atoi(height) = %d\n", temp);
                     p->height = (uint16_t)temp;
+                    printf("p->height = %u\n", p->height);
                 }
                 else
                 {
@@ -252,13 +254,14 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                     }
 
                     int temp = atoi(optarg);
-                    if(temp < 18 || temp > 125) 
+                    if(temp < 10 || temp > 500) 
                     {
                         printf("Вес от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
-
+                    printf("atoi(weight) = %d\n", temp);
                     p->weight = (uint16_t)temp;
+                    printf("weight = %u\n", p->weight);
                 }
                 else
                 {
@@ -277,7 +280,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                         while(optarg[i] != '\0') 
                             if( optarg[i++] < '0' || optarg[i] > '9' ) 
                             { 
-                                printf("Недопустимые символы\n");
+                                printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
                                 return PARSE_ACL_ERROR;
                             }
 
@@ -320,7 +323,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 	};
 
     error_t err = SUCSESS;
-    
+
     // check parse args
     if(p->name[0] == '\0')
     {
@@ -342,12 +345,13 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
         if(err != SUCSESS) check_error(err);
     }
 
+    printf("height = %u\n", p->height);
     if(p->height == 0) 
     {   
         err = get_height(&p->height);
         if(err != SUCSESS) check_error(err);
     }
-
+    printf("weight = %u\n", p->weight);
     if(p->weight == 0) 
     {
         err = get_weight(&p->weight);
