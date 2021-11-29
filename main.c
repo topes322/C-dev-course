@@ -227,9 +227,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                         printf("Рост от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
-                    printf("Height\n");
                     p->height = (uint16_t)temp;
-                    printf("%u\n", p->height);
                 }
                 else
                 {
@@ -253,8 +251,14 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                         }
                     }
 
+                    int temp = atoi(optarg);
+                    if(temp < 18 || temp > 125) 
+                    {
+                        printf("Вес от 10 до 500. Введено: %d\n", temp);
+                        return PARSE_ACL_ERROR;
+                    }
 
-                    p->weight = (uint16_t)atoi(optarg);
+                    p->weight = (uint16_t)temp;
                 }
                 else
                 {
@@ -338,7 +342,6 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
         if(err != SUCSESS) check_error(err);
     }
 
-    printf("if %u\n", p->height);
     if(p->height == 0) 
     {   
         err = get_height(&p->height);
