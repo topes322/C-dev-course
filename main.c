@@ -57,7 +57,7 @@ error_t get_weight(uint16_t*);
 error_t get_gender(gender_t*);
 
 
-int8_t validation_acl_string(char *, char *);
+error_t validation_acl_string(char *, char *);
 
 
 
@@ -65,16 +65,10 @@ int main(int argc, char* argv[])
 {
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
 
-    //__CHAR16_TYPE__ q = L'a';
-    //printf("%u\n", q);
 
     if(argc > 1)
     {
-        /*
-        for (uint8_t i = 0; i < argc; i++)
-        {
-            printf("argc #%u: %s\n", i, argv[i]);
-        }*/
+
         error_t err = parse_command_line_arg(&person, argc, argv);
         if(err != SUCSESS) check_error(err);
     }
@@ -86,19 +80,6 @@ int main(int argc, char* argv[])
 
     print_personal_data(&person);
 
-    /*
-    // unicode для кирилицы 
-
-        union test_t
-    {
-        unsigned char str[3];
-        uint16_t byte;
-    } test_t;
-    scanf("%s", &test_t.str);
-    printf("strlen = %d\n", strlen(test_t.str));
-    printf("byte2 = %u\n", test_t.byte);
-    printf("string = %s\n", test_t.str);
-    */
     return 0;
 }
 
@@ -160,21 +141,19 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 	int option;
 	int option_index;
 
-    //https://firststeps.ru/linux/r.php?11
     while ((option = getopt_long(  argc, argv, 
                                 short_options,
 		                        long_options, 
                                 &option_index)) != -1)
     {
 
-        //printf("rez = %d\noption_index = %d\n", rez, option_index);
-
 		switch(option){
 			case 'n': // name
             {
 				if (optarg)
                 {
-                    validation_acl_string(p->name, optarg);
+                    error_t err = validation_acl_string(p->name, optarg);
+                    if(err != SUCSESS) return err;
                 }
                 else
                 {
@@ -188,7 +167,8 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
             {
 				if (optarg)
                 {
-                    validation_acl_string(p->surname, optarg);
+                    error_t err = validation_acl_string(p->surname, optarg);
+                    if(err != SUCSESS) return err;
                 }
                 else
                 {
@@ -202,19 +182,23 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
             {
                 if (optarg)
                 {
+
                     int i = 0; 
-                    uint8_t flag = 0;
-                    while(optarg[i++] != '\0') 
-                        if(optarg[i] < '0' && optarg[i] > '9') 
+                    while(optarg[i] != '\0') 
+                        if( optarg[i++] < '0' || optarg[i] > '9' )
                         { 
-                            printf("Недопустимые символы\n");
-                            flag++;
-                            break;
+                            printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
+                            return PARSE_ACL_ERROR;
                         }
+                    
+                    int temp = atoi(optarg);
+                    if(temp < 18 || temp > 125) 
+                    {
+                        printf("Возраст от 18 до 125. Введено: %d\n", temp);
+                        return PARSE_ACL_ERROR;
+                    }
 
-                    if(flag) break;
-
-                    p->age = (uint8_t)atoi(optarg);
+                    p->age = (uint8_t)temp;
                 }
                 else
                 {
@@ -229,18 +213,23 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                 if(optarg)
                 {
                     int i = 0; 
-                    uint8_t flag = 0;
-                    while(optarg[i++] != '\0') 
-                        if(optarg[i] < '0' && optarg[i] > '9') 
+                    while(optarg[i] != '\0') 
+                        if( optarg[i++] < '0' || optarg[i] > '9' ) 
                         { 
-                            printf("Недопустимые символы\n");
-                            flag++;
-                            break;
+                            
+                            printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
+                            return PARSE_ACL_ERROR;
                         }
 
-                    if(flag) break;
-
-                    p->height = (uint16_t)atoi(optarg);
+                    int temp = atoi(optarg);
+                    if(temp < 10 || temp > 500) 
+                    {
+                        printf("Рост от 10 до 500. Введено: %d\n", temp);
+                        return PARSE_ACL_ERROR;
+                    }
+                    printf("Height\n");
+                    p->height = (uint16_t)temp;
+                    printf("%u\n", p->height);
                 }
                 else
                 {
@@ -255,16 +244,15 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                 if(optarg)
                 {
                     int i = 0; 
-                    uint8_t flag = 0;
-                    while(optarg[i++] != '\0') 
-                        if(optarg[i] < '0' && optarg[i] > '9') 
+                    while(optarg[i] != '\0') 
+                    {
+                        if( optarg[i++] < '0' || optarg[i] > '9' ) 
                         { 
-                            printf("Недопустимые символы\n");
-                            flag++;
-                            break;
+                            printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
+                            return PARSE_ACL_ERROR;
                         }
+                    }
 
-                    if(flag) break;
 
                     p->weight = (uint16_t)atoi(optarg);
                 }
@@ -281,18 +269,21 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                 if (optarg)
                 {
                     int i = 0; 
-                        uint8_t flag = 0;
-                        while(optarg[i++] != '\0') 
-                            if(optarg[i] < '0' && optarg[i] > '9') 
+
+                        while(optarg[i] != '\0') 
+                            if( optarg[i++] < '0' || optarg[i] > '9' ) 
                             { 
                                 printf("Недопустимые символы\n");
-                                flag++;
-                                break;
+                                return PARSE_ACL_ERROR;
                             }
 
-                        if(flag) break;
-
-                        p->gender = (uint8_t)atoi(optarg);
+                        int temp = atoi(optarg);
+                        if(temp < UNDEFINED || temp > FEMALE) 
+                        {
+                            printf("Неверно указан пол. Мужской - 1, Женский - 2. Введено: %d\n", temp);
+                            return PARSE_ACL_ERROR;
+                        }
+                        p->gender = (uint8_t)temp;
                 }
                 else
                 {
@@ -317,7 +308,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 			};
 
 			case '?': default: {
-				printf("found unknown option\n");
+				printf("found unknown option or not found argument\n");
                 return PARSE_ACL_ERROR;
                 break;
 			};
@@ -325,10 +316,10 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 	};
 
     error_t err = SUCSESS;
+    
     // check parse args
     if(p->name[0] == '\0')
     {
-        printf("enter name\n");
         err = get_name(p->name, "Имя");
 
         if(err != SUCSESS) check_error(err);
@@ -336,7 +327,6 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 
     if(p->surname[0] == '\0')
     {
-        printf("enter surname\n");
         err = get_name(p->surname, "Фамилия");
 
         if(err != SUCSESS) check_error(err);
@@ -348,6 +338,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
         if(err != SUCSESS) check_error(err);
     }
 
+    printf("if %u\n", p->height);
     if(p->height == 0) 
     {   
         err = get_height(&p->height);
@@ -360,7 +351,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
         if(err != SUCSESS) check_error(err);
     }
 
-    if(p->gender == UNDEFINED) 
+    if(p->gender == UNDEFINED || p->gender > FEMALE) 
     {
         err = get_gender(&p->gender);
         if(err != SUCSESS) check_error(err);
@@ -370,10 +361,13 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 }
 
 
-int8_t validation_acl_string(char * name, char * optarg)
+error_t validation_acl_string(char * name, char * optarg)
 {
-    uint8_t flag = 0;
-    if(strlen(optarg) > MAX_LEN - 2) flag++;
+    if(strlen(optarg) > MAX_LEN - 2) 
+    {
+        printf("Поля name и surname не более %u символов\n", MAX_LEN - 2);
+        return PARSE_ACL_ERROR;
+    }
 
     uint8_t i = 0;
     while(optarg[i] != '\0')
@@ -381,16 +375,15 @@ int8_t validation_acl_string(char * name, char * optarg)
         if(!(optarg[i] >= 'a' && optarg[i] <= 'z') 
         && !(optarg[i] >= 'A' && optarg[i] <= 'Z'))
         {
-            flag++;
-            printf("В качестве аргумента использованы недопустимые символы.\n");
-            break;
+            printf("Используйте только символы латиницы для полей name и surname.\n");
+            return PARSE_ACL_ERROR;
         }
         i++;
     }
-
-    if(flag == 0) strcpy(name, optarg);
+    
+    strcpy(name, optarg);
         
-    return flag;
+    return SUCSESS;
 }
 
 error_t get_name(char* name, char* n)
@@ -416,23 +409,9 @@ error_t get_name(char* name, char* n)
         uint8_t i = 0;
         while(name[i] != '\0')
         {
-            /*
-            printf("%c - %d\n", data->second_name[i], data->second_name[i]);
-            printf("%c - %d\n", 'a','a' );
-            printf("%c - %d\n", 'z','z');
-            printf("%c - %d\n", 'A','A');
-            printf("%c - %d\n", 'Z','Z');
-            printf("%d\n", data->second_name[i] < 'a' || data->second_name[i] > 'z' &
-               data->second_name[i] < 'A' || data->second_name[i] > 'Z');*/
 
             if(!(name[i] >= 'a' && name[i] <= 'z') 
-            && !(name[i] >= 'A' && name[i] <= 'Z')
-            //&& !(data->second_name[i] >= 'а' && data->second_name[i] <= 'я')
-            //&& !(data->second_name[i] >= 'А' && data->second_name[i] <= 'Я')
-            // а = 45264 - 2 bytes
-            // А = 37072 
-            // я = 36817 
-            )
+            && !(name[i] >= 'A' && name[i] <= 'Z'))
             {
                flag++;
                printf("Испльзуйте только символы латиницы. Попробуйте еще раз.\n%s(не более %u смволов): ", n, MAX_LEN - 2);
@@ -508,7 +487,7 @@ error_t get_gender(gender_t * gender)
 error_t validation_string(char * str)
 {
     if(!str) return NULL_PTR_ERROR;
-
+    // MAX_LEN - 1
     if(scanf("%11s", str) != 1) return PARSE_ERROR;
 
     return SUCSESS;
