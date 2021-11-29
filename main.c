@@ -124,6 +124,8 @@ error_t get_personal_data(person_t* data)
 // prompt for user input if there is not enough data
 error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 {
+    uint16_t height = 0;
+    uint16_t weight = 0;
 
     const char* short_options = "n:s:a:h:w:g:";
     
@@ -227,9 +229,9 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                         printf("Рост от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
-                    printf("atoi(height) = %d\n", temp);
-                    p->height = (uint16_t)temp;
-                    printf("p->height = %u\n", p->height);
+                    
+                    height = (uint16_t)temp;
+                    
                 }
                 else
                 {
@@ -259,9 +261,9 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
                         printf("Вес от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
-                    printf("atoi(weight) = %d\n", temp);
-                    p->weight = (uint16_t)temp;
-                    printf("weight = %u\n", p->weight);
+                    
+                    weight = (uint16_t)temp;
+                    
                 }
                 else
                 {
@@ -345,18 +347,20 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
         if(err != SUCSESS) check_error(err);
     }
 
-    printf("height = %u\n", p->height);
-    if(p->height == 0) 
+    
+    if(height == 0) 
     {   
         err = get_height(&p->height);
         if(err != SUCSESS) check_error(err);
     }
-    printf("weight = %u\n", p->weight);
-    if(p->weight == 0) 
+    else p->height = height;
+    
+    if(weight == 0) 
     {
         err = get_weight(&p->weight);
         if(err != SUCSESS) check_error(err);
     }
+    else p->weight = weight;
 
     if(p->gender == UNDEFINED || p->gender > FEMALE) 
     {
