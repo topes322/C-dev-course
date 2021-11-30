@@ -4,7 +4,7 @@
 #define _VALIDATION_STR_H_
 
 
-error_t validation_acl_string(char *, char *);
+error_t validation_acl_string(char *, const char * const);
 
 
 uint8_t validation_string(char *, const char * const);

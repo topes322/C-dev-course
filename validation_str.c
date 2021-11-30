@@ -34,7 +34,7 @@ uint8_t validation_string(char * str, const char * const name)
 
 
 
-error_t validation_acl_string(char * name, char * optarg)
+error_t validation_acl_string(char * name, const char * const optarg)
 {
     if(strlen(optarg) > MAX_LEN - 2) 
     {
