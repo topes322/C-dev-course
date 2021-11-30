@@ -5,14 +5,33 @@
 #include <string.h>
 
 
-error_t validation_string(char * str)
-{
-    if(!str) return NULL_PTR_ERROR;
-    // MAX_LEN - 1
-    if(scanf("%11s", str) != 1) return PARSE_ERROR;
 
-    return SUCSESS;
+uint8_t validation_string(char * str, const char * const name)
+{
+
+    if(str[MAX_LEN - 2] != '\0') 
+    {
+        printf("Допустимое число символов не более %"PRIu8". Попробуйте еще раз.\n", MAX_LEN - 2 );
+
+        str[MAX_LEN - 2] = '\0';
+
+        return 1;
+    }
+
+    uint8_t i = 0;
+    while(str[i] != '\0')
+    {
+        if(!(str[i++] >= 'a' && str[i] <= 'z') 
+        && !(str[i] >= 'A' && str[i] <= 'Z'))
+        {
+            printf("Используйте только символы латиницы. Попробуйте еще раз.\n%s(не более %"PRIu8" смволов): ", name, MAX_LEN - 2);
+            return 2;
+        }
+    }
+
+    return 0;
 }
+
 
 
 error_t validation_acl_string(char * name, char * optarg)

@@ -6,6 +6,8 @@
 
 error_t validation_acl_string(char *, char *);
 
-error_t validation_string(char*);
+
+uint8_t validation_string(char *, const char * const);
+
 
 #endif

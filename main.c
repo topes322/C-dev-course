@@ -13,7 +13,7 @@
 error_t print_personal_data( const person_t* const );
 
 
-error_t parse_command_line_arg(person_t*, int, char*[]);
+error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 
 
 void check_error(error_t const);
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 // parse command line arguments
 // prompt for user input if there is not enough data
-error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
+error_t parse_command_line_arg(person_t * p, const int argc, const char * const argv[])
 {
     uint16_t height = 0;
     uint16_t weight = 0;
@@ -296,6 +296,7 @@ error_t parse_command_line_arg(person_t* p, int argc, char* argv[])
 }
 
 
+
 // print data struct person_t
 error_t print_personal_data(const person_t * const p)
 {
@@ -328,6 +329,8 @@ error_t print_personal_data(const person_t * const p)
 
     return SUCSESS;
 }
+
+
 
 // exit on error, print type error
 void check_error(error_t const err)

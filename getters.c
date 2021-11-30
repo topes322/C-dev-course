@@ -1,7 +1,9 @@
+
 #include "getters.h"
 #include "types.h"
 
 #include <stdio.h>
+
 
 
 // user enter data into struct person_t
@@ -37,45 +39,20 @@ error_t get_personal_data(person_t* data)
     return SUCSESS;
 }
 
-error_t get_name(char* field, char* name)
+
+
+error_t get_name(char * str, const char * const name)
 {
-    uint8_t err = SUCSESS;
-    printf("%s(латиницей, не более %u смволов): ", name, MAX_LEN - 2);
-    while (1)
+    do
     {
-
-        err = validation_string(field);
-        if(!err) return err;
-
-        uint8_t flag = 0;
-
-        if(field[MAX_LEN - 2] != '\0') 
-        {
-            flag++;
-            printf("Допустимое число символов не более %"PRIu8". Попробуйте еще раз.\n", MAX_LEN - 2 );
-            uint8_t i = 0;
-            while (field[i] != '\0') name[i++] = '\0';
-        }
-
-        uint8_t i = 0;
-        while(field[i] != '\0')
-        {
-
-            if(!(field[i] >= 'a' && field[i] <= 'z') 
-            && !(field[i] >= 'A' && field[i] <= 'Z'))
-            {
-               flag++;
-               printf("Испльзуйте только символы латиницы. Попробуйте еще раз.\n%s(не более %"PRIu8" смволов): ", name, MAX_LEN - 2);
-               break;
-            }
-            i++;
-        }
-
-        if(flag == 0) break;
-        flag = 0;
-    } // while(1)
-    return SUCSESS;
+        printf("%s(латиницей, не более %u смволов): ", name, MAX_LEN - 2);
+        if(!str || !name) return NULL_PTR_ERROR;
+        // MAX_LEN - 1
+        if(scanf("%11s", str) != 1) return PARSE_ERROR;
+    }
+    while (validation_string(str, name));
 }
+
 
 
 error_t get_age(uint8_t * age)
@@ -90,6 +67,7 @@ error_t get_age(uint8_t * age)
     } while (*age < 18 || *age > 125);
     return SUCSESS;
 }
+
 
 
 error_t get_height(uint16_t * height)
@@ -107,6 +85,7 @@ error_t get_height(uint16_t * height)
 }
 
 
+
 error_t get_weight(uint16_t * weight)
 {
     do
@@ -120,6 +99,8 @@ error_t get_weight(uint16_t * weight)
     } while(*weight < 10 || *weight > 500);
     return SUCSESS;
 }
+
+
 
 error_t get_gender(gender_t * gender)
 {
