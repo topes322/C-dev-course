@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <getopt.h> 
 
 #include "types.h"
 #include "getters.h"
-#include "validation_str.h"
+#include "validation_string.h"
+#include "errors.h"
 
 
 
@@ -16,14 +16,11 @@ error_t print_personal_data( const person_t* const );
 error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 
 
-void check_error(error_t const);
-
 
 
 int main(int argc, char* argv[])
 {
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
-
 
     if(argc > 1)
     {
@@ -54,22 +51,22 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     const char* short_options = "n:s:a:h:w:g:";
     
 	const struct option long_options[] = {
-		{"name", required_argument, NULL, 'n'},
+		{"name",    required_argument, NULL, 'n'},
 		{"surname", required_argument, NULL, 's'},
-		{"age", required_argument, NULL, 'a'},
-        {"height", required_argument, NULL, 'h'},
-        {"weight", required_argument, NULL, 'w'},
-        {"gender", required_argument, NULL, 'g'},
-        {"help", no_argument, NULL, 1},
+        {"age",     required_argument, NULL, 'a'},
+        {"height",  required_argument, NULL, 'h'},
+        {"weight",  required_argument, NULL, 'w'},
+        {"gender",  required_argument, NULL, 'g'},
+        {"help",    no_argument,       NULL,  1},
 		{NULL, 0, NULL, 0}
 	};
 
 	int option;
 	int option_index;
 
-    while ((option = getopt_long(  argc, argv, 
+    while((option = getopt_long(argc, argv, 
                                 short_options,
-		                        long_options, 
+                                long_options, 
                                 &option_index)) != -1)
     {
 
@@ -85,7 +82,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 {
                     printf("found size without value\n");
                     return NULL_PTR_ERROR;
-                }
+            }
                 break;
             };
 
@@ -113,6 +110,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                     while(optarg[i] != '\0') 
                         if( optarg[i++] < '0' || optarg[i] > '9' )
                         { 
+                            ERROR_PLACE;
                             printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
                             return PARSE_ACL_ERROR;
                         }
@@ -120,6 +118,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                     int temp = atoi(optarg);
                     if(temp < 18 || temp > 125) 
                     {
+                        ERROR_PLACE;
                         printf("Возраст от 18 до 125. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
@@ -128,6 +127,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 }
                 else
                 {
+                    ERROR_PLACE;
                     printf("found size without value\n");
                     return NULL_PTR_ERROR;
                 }
@@ -142,7 +142,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                     while(optarg[i] != '\0') 
                         if( optarg[i++] < '0' || optarg[i] > '9' ) 
                         { 
-                            
+                            ERROR_PLACE;
                             printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
                             return PARSE_ACL_ERROR;
                         }
@@ -150,6 +150,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                     int temp = atoi(optarg);
                     if(temp < 10 || temp > 500) 
                     {
+                        ERROR_PLACE;
                         printf("Рост от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
@@ -159,6 +160,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 }
                 else
                 {
+                    ERROR_PLACE;
                     printf("found size without value\n");
                     return NULL_PTR_ERROR;
                 }
@@ -205,7 +207,8 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
                         while(optarg[i] != '\0') 
                             if( optarg[i++] < '0' || optarg[i] > '9' ) 
-                            { 
+                            {
+                                ERROR_PLACE; 
                                 printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
                                 return PARSE_ACL_ERROR;
                             }
@@ -213,6 +216,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                         int temp = atoi(optarg);
                         if(temp < UNDEFINED || temp > FEMALE) 
                         {
+                            ERROR_PLACE;
                             printf("Неверно указан пол. Мужской - 1, Женский - 2. Введено: %d\n", temp);
                             return PARSE_ACL_ERROR;
                         }
@@ -220,6 +224,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 }
                 else
                 {
+                    ERROR_PLACE;
                     printf("found size without value\n");
                     return NULL_PTR_ERROR;
                 }
@@ -241,6 +246,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 			};
 
 			case '?': default: {
+                ERROR_PLACE;
 				printf("found unknown option or not found argument\n");
                 return PARSE_ACL_ERROR;
                 break;
@@ -255,41 +261,69 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {
         err = get_name(p->name, "Имя");
 
-        if(err != SUCSESS) check_error(err);
+        if(err != SUCSESS)
+        {
+            ERROR_PLACE;
+            check_error(err);
+        }
     }
 
     if(p->surname[0] == '\0')
     {
         err = get_name(p->surname, "Фамилия");
 
-        if(err != SUCSESS) check_error(err);
+        if(err != SUCSESS)
+        {
+            ERROR_PLACE;
+            check_error(err);
+        }
     }
 
     if(p->age == 0) 
     {
         err = get_age(&p->age);
-        if(err != SUCSESS) check_error(err);
+        
+        if(err != SUCSESS)
+        {
+            ERROR_PLACE;
+            check_error(err);
+        }
     }
 
     
     if(height == 0) 
     {   
         err = get_height(&p->height);
-        if(err != SUCSESS) check_error(err);
+        
+        if(err != SUCSESS)
+        {
+            ERROR_PLACE;
+            check_error(err);
+        }
     }
     else p->height = height;
     
     if(weight == 0) 
     {
         err = get_weight(&p->weight);
-        if(err != SUCSESS) check_error(err);
+        
+        if(err != SUCSESS)
+        {
+            ERROR_PLACE;
+            check_error(err);
+        }
     }
     else p->weight = weight;
 
     if(p->gender == UNDEFINED || p->gender > FEMALE) 
     {
         err = get_gender(&p->gender);
-        if(err != SUCSESS) check_error(err);
+        
+        if(err != SUCSESS)
+        {
+            ERROR_PLACE;
+            check_error(err);
+        }
     }
 
     return SUCSESS;
@@ -300,7 +334,11 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 // print data struct person_t
 error_t print_personal_data(const person_t * const p)
 {
-    if(!p) return NULL_PTR_ERROR;
+    if(!p)
+    {
+        ERROR_PLACE;
+        return NULL_PTR_ERROR;
+    }
 
     printf("\nИмя: %s\n", p->name);
     printf("Фамилия: %s\n", p->surname);
@@ -330,25 +368,3 @@ error_t print_personal_data(const person_t * const p)
     return SUCSESS;
 }
 
-
-
-// exit on error, print type error
-void check_error(error_t const err)
-{
-    switch (err)
-    {
-    case NULL_PTR_ERROR:
-        printf("NULL_PTR_ERROR Попытка обращения к необьявленному указателю\n");
-        exit(NULL_PTR_ERROR);
-    case PARSE_ERROR:
-        printf("PARSE_ERROR Ошибка при вводе данных пользователем\n");
-        exit(PARSE_ERROR);
-    case PARSE_ACL_ERROR:
-        printf("PARSE_ACL_ERROR Ошибка преобразования аргументов коммандной строки\n");
-        exit(PARSE_ACL_ERROR);
-    default:
-        printf("Неизвестная ошибка\n");
-        exit(-1);
-        break;
-    }
-}

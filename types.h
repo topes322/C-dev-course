@@ -1,19 +1,11 @@
 
-#ifndef _HEADER_H_
+#ifndef _TYPES_H_
 
-#define _HEADER_H_
+#define _TYPES_H_
 
 #include <inttypes.h>
 
 #define MAX_LEN 12U
-
-typedef enum error_t
-{
-    SUCSESS,
-    NULL_PTR_ERROR,
-    PARSE_ERROR, 
-    PARSE_ACL_ERROR
-} error_t;
 
 
 typedef enum gender_t {
