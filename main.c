@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <getopt.h> 
+#include <stdlib.h>
 
 #include "types.h"
 #include "getters.h"
 #include "validation_string.h"
 #include "errors.h"
 
+//#include "mystdlib.h"
+//#include "mystring.h"
 
 
 
@@ -20,6 +23,30 @@ error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 
 int main(int argc, char* argv[])
 {
+    char number = "12345";
+    char text = ":12::34:::564:4568::546:87";
+
+    printf("char to int number = %d\n\n", char_to_int(number));
+
+    char * s = mystrtok( text, ':');
+    printf("%s\n", s);
+
+    if(s) free(s);
+
+    while(1)
+    {
+        s = mystrtok(NULL,':');
+        if(s) 
+        {
+            printf("%s\n", s);
+            free(s);
+        }
+        else
+            break;
+        
+    }
+
+    ///////////
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
 
     if(argc > 1)
