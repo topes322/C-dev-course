@@ -1,44 +1,69 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "mystring.h"
 
-extern char * string = NULL;
+
 
 char * mystrtok(char * str, const char delimiter)
 {   
-    //static char * string = NULL;
 
-    if(!str && !string) return NULL;
+    static char * string = NULL;
+
+    if(str == NULL && string == NULL)
+    {
+        printf("return NULL\n"); 
+        return NULL;
+    }
+
+    if(str != NULL) 
+        string = str;
+
+
+
+    char * new_string = malloc(strlen(string) + 1);
+    printf("strlen(string) = %d\n", strlen(string));
+
+    uint16_t i = 0;
     
-    if(str && !string) string = str;
-
-    char * new_string = malloc(strlen(string));
-
-    uint8_t i = 0;
-
     do
     {
-        for ( ; *string && *string != delimiter; ++string, ++i)
+        for(; *string != '\0' && *string != delimiter; ++string, ++i)
+        {
             new_string[i] = *string;
+            //printf("%c\t %d\n", new_string[i], i);
+        }
+        if (*string == delimiter) ++string;
+        if (*string == '\0') break;
+    } while (i == 0);
+        
 
-        if(*string == delimiter) 
-            ++string;
-
-        if(*string == '\0') 
-            break;
-
-    } while ( i == 0 );
-    
+    if(*string == '\0')
+        string = NULL;
     
     new_string[i] = '\0';
 
-    if( !*string ) 
-        string = NULL;
-
-    else if (*(string - 1) == delimiter)
-        realloc(new_string, strlen(new_string + 1));
    
     return new_string;
+}
+
+
+
+int string_copy(char * dest, char * sourse)
+{
+
+    uint16_t i = 0;
+
+    for(; *sourse ; ++i)
+    {
+        
+        dest[i] = sourse[i];
+        printf("%c\n", dest[i]);
+    }
+    
+    dest[++i] = '\0';
+
+    return 0;
 }

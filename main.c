@@ -23,31 +23,28 @@ error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 
 int main(int argc, char* argv[])
 {
+    
+    /*
     char * number = "12345";
-    char * text = ":12::34:::564:4568::546:87";
 
     printf("char to int number = %d\n\n", char_to_int(number));
 
-    char * s = mystrtok( text, ':');
-    printf("%s\n", s);
+    char * text = ";12;34;;3245;432;";//":12::34:::564:4568::546:87";
+    
+    char * s = mystrtok( text, ';');
+    
 
-    if(s) free(s);
-
-    while(1)
+    while(s)
     {
-        s = mystrtok(NULL,':');
-        if(s) 
-        {
-            printf("%s\n", s);
-            free(s);
-        }
-        else
-            break;
-        
+        printf("%s\n", s);
+        free(s);
+        s = mystrtok(NULL, ';');
     }
+    */
 
     ///////////
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
+
 
     if(argc > 1)
     {
@@ -61,7 +58,8 @@ int main(int argc, char* argv[])
         if(err != SUCSESS) check_error(err);
     }
 
-    print_personal_data(&person);
+    //print_personal_data(&person);
+    save_file(&person);
 
     return 0;
 }
@@ -74,6 +72,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 {
     uint16_t height = 0;
     uint16_t weight = 0;
+    uint8_t add = 0;
 
     const char* short_options = "n:s:a:h:w:g:";
     
@@ -84,6 +83,8 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
         {"height",  required_argument, NULL, 'h'},
         {"weight",  required_argument, NULL, 'w'},
         {"gender",  required_argument, NULL, 'g'},
+        {"add",     no_argument,       NULL,  3},
+        {"print",   no_argument,       NULL,  2},
         {"help",    no_argument,       NULL,  1},
 		{NULL, 0, NULL, 0}
 	};
@@ -100,7 +101,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 		switch(option){
 			case 'n': // name
             {
-				if (optarg)
+				if (optarg && add)
                 {
                     error_t err = validation_acl_string(p->name, optarg);
                     if(err != SUCSESS) return err;
@@ -109,13 +110,13 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 {
                     printf("found size without value\n");
                     return NULL_PTR_ERROR;
-            }
+                }
                 break;
             };
 
 			case 's': // surname
             {
-				if (optarg)
+				if (optarg && add)
                 {
                     error_t err = validation_acl_string(p->surname, optarg);
                     if(err != SUCSESS) return err;
@@ -130,7 +131,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 	
 			case 'a': // age
             {
-                if (optarg)
+                if (optarg && add)
                 {
 
                     int i = 0; 
@@ -163,7 +164,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 'h': // height
             {
-                if(optarg)
+                if(optarg && add)
                 {
                     int i = 0; 
                     while(optarg[i] != '\0') 
@@ -196,7 +197,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 'w': // weight
             {
-                if(optarg)
+                if(optarg && add)
                 {
                     int i = 0; 
                     while(optarg[i] != '\0') 
@@ -228,7 +229,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 'g': // gender
             {
-                if (optarg)
+                if (optarg && add)
                 {
                     int i = 0; 
 
@@ -269,8 +270,22 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                         "-w 80 или --weight 80 , ваш вес, целое число, от 10 до 500\n"
                         "-g 1 или --gender 1 , ваш пол, целое число, Мужской - 1, Женский - 2\n"
                         , MAX_LEN - 2 , MAX_LEN - 2);
-				break;
+				exit(0);
 			};
+
+            case 3: // --add
+            {
+                add = 1;
+                break;
+            };
+
+            case 2: // --print
+            {
+                person_t p;
+                read_file(&p);
+                print_personal_data(&p);
+                exit(0);
+            };
 
 			case '?': default: {
                 ERROR_PLACE;
@@ -352,7 +367,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
             check_error(err);
         }
     }
-
+    
     return SUCSESS;
 }
 

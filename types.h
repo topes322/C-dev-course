@@ -5,7 +5,7 @@
 
 #include <inttypes.h>
 
-#define MAX_LEN 12U
+#define MAX_LEN 120U
 
 
 typedef enum gender_t {
