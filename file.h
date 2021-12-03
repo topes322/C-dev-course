@@ -4,9 +4,14 @@
 #define _FILE_H_
 
 #include "types.h"
+#include "errors.h"
 
-int read_file(person_t *);
+#define FILE_NAME "person.txt"
+#define REWRITE_MODE "w"
+#define READ_MODE "r"
 
-int save_file(person_t *);
+error_t read_file(person_t *);
+
+error_t save_file(person_t *);
 
 #endif

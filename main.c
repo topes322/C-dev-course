@@ -8,9 +8,8 @@
 #include "validation_string.h"
 #include "errors.h"
 
-//#include "mystdlib.h"
-//#include "mystring.h"
-
+#include "mystdlib.h"
+#include "mystring.h"
 
 
 error_t print_personal_data( const person_t* const );
@@ -20,14 +19,14 @@ error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 
 
 
-
 int main(int argc, char* argv[])
 {
-    
-    /*
-    char * number = "12345";
+    // MIN -2147483648  MAX 2147483647
+    char num[] = "-2147483649";
+    int answer = 0;
 
-    printf("char to int number = %d\n\n", char_to_int(number));
+    printf("retrun - %d\n", string_to_int(&answer,num));
+    printf("int - %d\n", answer);
 
     char * text = ";12;34;;3245;432;";//":12::34:::564:4568::546:87";
     
@@ -40,15 +39,13 @@ int main(int argc, char* argv[])
         free(s);
         s = mystrtok(NULL, ';');
     }
-    */
-
+    
     ///////////
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
 
 
     if(argc > 1)
     {
-
         error_t err = parse_command_line_arg(&person, argc, argv);
         if(err != SUCSESS) check_error(err);
     }
@@ -56,10 +53,12 @@ int main(int argc, char* argv[])
     {
         error_t err = get_personal_data(&person);
         if(err != SUCSESS) check_error(err);
-    }
+        
+        err = save_file(&person);
+        if(err) check_error(err);
 
-    //print_personal_data(&person);
-    save_file(&person);
+        print_personal_data(&person);
+    }
 
     return 0;
 }
@@ -138,16 +137,14 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                     while(optarg[i] != '\0') 
                         if( optarg[i++] < '0' || optarg[i] > '9' )
                         { 
-                            ERROR_PLACE;
-                            printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
+                            PRINT_ERROR("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
                             return PARSE_ACL_ERROR;
                         }
                     
                     int temp = atoi(optarg);
                     if(temp < 18 || temp > 125) 
                     {
-                        ERROR_PLACE;
-                        printf("Возраст от 18 до 125. Введено: %d\n", temp);
+                        PRINT_ERROR("Возраст от 18 до 125. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
 
@@ -155,8 +152,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 }
                 else
                 {
-                    ERROR_PLACE;
-                    printf("found size without value\n");
+                    PRINT_ERROR("found size without value\n");
                     return NULL_PTR_ERROR;
                 }
 				break;
@@ -170,16 +166,14 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                     while(optarg[i] != '\0') 
                         if( optarg[i++] < '0' || optarg[i] > '9' ) 
                         { 
-                            ERROR_PLACE;
-                            printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
+                            PRINT_ERROR("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
                             return PARSE_ACL_ERROR;
                         }
 
                     int temp = atoi(optarg);
                     if(temp < 10 || temp > 500) 
                     {
-                        ERROR_PLACE;
-                        printf("Рост от 10 до 500. Введено: %d\n", temp);
+                        PRINT_ERROR("Рост от 10 до 500. Введено: %d\n", temp);
                         return PARSE_ACL_ERROR;
                     }
                     
@@ -188,8 +182,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 }
                 else
                 {
-                    ERROR_PLACE;
-                    printf("found size without value\n");
+                    PRINT_ERROR("found size without value\n");
                     return NULL_PTR_ERROR;
                 }
                 break;
@@ -236,24 +229,21 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                         while(optarg[i] != '\0') 
                             if( optarg[i++] < '0' || optarg[i] > '9' ) 
                             {
-                                ERROR_PLACE; 
-                                printf("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg);
+                                PRINT_ERROR("Недопустимые символы. Ожидалось целое число. Аргумент %s\n", optarg); 
                                 return PARSE_ACL_ERROR;
                             }
 
                         int temp = atoi(optarg);
                         if(temp < UNDEFINED || temp > FEMALE) 
                         {
-                            ERROR_PLACE;
-                            printf("Неверно указан пол. Мужской - 1, Женский - 2. Введено: %d\n", temp);
+                            PRINT_ERROR("Неверно указан пол. Мужской - 1, Женский - 2. Введено: %d\n", temp);
                             return PARSE_ACL_ERROR;
                         }
                         p->gender = (uint8_t)temp;
                 }
                 else
                 {
-                    ERROR_PLACE;
-                    printf("found size without value\n");
+                    PRINT_ERROR("found size without value\n");
                     return NULL_PTR_ERROR;
                 }
                 break;
@@ -263,6 +253,8 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
             {
 				printf( "Можете запустить программу без аргументов и ввести данные вручную\n"
                         "Список доступных аргументов командной строки:\n"
+                        "--print для печати данных из файла"
+                        "--add для добавления новой записи. Далее опции разрешенные только после добавления add"
                         "-n YourName или --name YourName , имя латиницей не более %"PRIu8" символов\n"
                         "-s YourSurname или --surname YourSurname , фамилия латинцей не более %"PRIu8" символов\n"
                         "-a 20 или --age 20 , ваш возраст, от 18 до 125 лет\n"
@@ -282,14 +274,17 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
             case 2: // --print
             {
                 person_t p;
-                read_file(&p);
+                error_t err = SUCSESS;
+
+                err = read_file(&p);
+                if(err) check_error(err);
+
                 print_personal_data(&p);
                 exit(0);
             };
 
 			case '?': default: {
-                ERROR_PLACE;
-				printf("found unknown option or not found argument\n");
+                PRINT_ERROR("found unknown option or not found argument\n");
                 return PARSE_ACL_ERROR;
                 break;
 			};
@@ -305,7 +300,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
         if(err != SUCSESS)
         {
-            ERROR_PLACE;
+            //PRINT_ERROR;
             check_error(err);
         }
     }
@@ -316,7 +311,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
         if(err != SUCSESS)
         {
-            ERROR_PLACE;
+            //PRINT_ERROR;
             check_error(err);
         }
     }
@@ -327,7 +322,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
         
         if(err != SUCSESS)
         {
-            ERROR_PLACE;
+            //PRINT_ERROR;
             check_error(err);
         }
     }
@@ -339,7 +334,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
         
         if(err != SUCSESS)
         {
-            ERROR_PLACE;
+            //PRINT_ERROR;
             check_error(err);
         }
     }
@@ -351,7 +346,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
         
         if(err != SUCSESS)
         {
-            ERROR_PLACE;
+            //PRINT_ERROR;
             check_error(err);
         }
     }
@@ -363,11 +358,14 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
         
         if(err != SUCSESS)
         {
-            ERROR_PLACE;
+            //PRINT_ERROR;
             check_error(err);
         }
     }
-    
+
+    err = save_file(p);
+    if(err) check_error(err);
+
     return SUCSESS;
 }
 
@@ -378,7 +376,7 @@ error_t print_personal_data(const person_t * const p)
 {
     if(!p)
     {
-        ERROR_PLACE;
+        PRINT_ERROR("Аргумент нулевой указатель\n");
         return NULL_PTR_ERROR;
     }
 

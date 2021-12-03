@@ -39,8 +39,7 @@ error_t validation_acl_string(char * name, const char * const optarg)
 {
     if(strlen(optarg) > MAX_LEN - 2) 
     {
-        ERROR_PLACE;
-        printf("Поля name и surname не более %"PRIu8" символов\n", MAX_LEN - 2);
+        PRINT_ERROR("Поля name и surname не более %"PRIu8" символов\n", MAX_LEN - 2);
         return PARSE_ACL_ERROR;
     }
 
@@ -50,8 +49,7 @@ error_t validation_acl_string(char * name, const char * const optarg)
         if(!(optarg[i++] >= 'a' && optarg[i] <= 'z') 
         && !(optarg[i] >= 'A' && optarg[i] <= 'Z'))
         {
-            ERROR_PLACE;
-            printf("Используйте только символы латиницы для полей name и surname.\n");
+            PRINT_ERROR("Используйте только символы латиницы для полей name и surname.\n");
             return PARSE_ACL_ERROR;
         }
     }

@@ -4,6 +4,6 @@
 
 #define _MYSTDLIB_H_
 
-int char_to_int(char * str);
+int string_to_int(int * num, char * str);
 
 #endif

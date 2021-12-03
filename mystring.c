@@ -7,6 +7,14 @@
 
 
 
+/*
+*   Делит строку на подстроки символом-разделителем. Аналог strtok.
+*   Для первого вызова подаются оба аргумента. Для последующих в аргумент str передается NULL. 
+*   str - строка для деления, delimiter - символ-разделитель.
+*
+*   Возвращает указатель на новую подстроку в случае нахождения разделителя.
+*   После возврата последней подстроки и нахождения нуль-символа возвращает нулевой указатель.
+*/
 char * mystrtok(char * str, const char delimiter)
 {   
 
@@ -14,7 +22,7 @@ char * mystrtok(char * str, const char delimiter)
 
     if(str == NULL && string == NULL)
     {
-        printf("return NULL\n"); 
+        //printf("return NULL\n"); 
         return NULL;
     }
 
@@ -24,7 +32,7 @@ char * mystrtok(char * str, const char delimiter)
 
 
     char * new_string = malloc(strlen(string) + 1);
-    printf("strlen(string) = %d\n", strlen(string));
+    //printf("strlen(string) = %d\n", strlen(string));
 
     uint16_t i = 0;
     

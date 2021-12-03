@@ -49,14 +49,14 @@ error_t get_name(char * str, const char * const name)
 
         if(!str || !name)
         {
-            ERROR_PLACE;
+            PRINT_ERROR("Аргумент нулевой указатель\n");
             return NULL_PTR_ERROR;
         }
 
         // MAX_LEN - 1
-        if(scanf("%11s", str) != 1) 
+        if(scanf("%119s", str) != 1) 
         {
-            ERROR_PLACE;
+            PRINT_ERROR("Ошибка scanf\n");
             return PARSE_ERROR;
         }
     }
@@ -75,7 +75,7 @@ error_t get_age(uint8_t * age)
 
         if(scanf("%"PRIu8, age) != 1) 
         {
-            ERROR_PLACE;
+            PRINT_ERROR("Ошибка scanf\n");
             return PARSE_ERROR;
         }
 
@@ -97,7 +97,7 @@ error_t get_height(uint16_t * height)
 
         if(scanf("%"PRIu16, height) != 1) 
         {
-            ERROR_PLACE;
+            PRINT_ERROR("Ошибка scanf\n");
             return PARSE_ERROR;
         }
 
@@ -119,7 +119,7 @@ error_t get_weight(uint16_t * weight)
 
         if(scanf("%"PRIu16, weight) != 1) 
         {
-            ERROR_PLACE;
+            PRINT_ERROR("Ошибка scanf\n");
             return PARSE_ERROR;
         }
 
@@ -142,7 +142,7 @@ error_t get_gender(gender_t * gender)
         *gender = UNDEFINED;
         if(scanf("%"PRIu8, gender) != 1) 
         {
-            ERROR_PLACE;
+            PRINT_ERROR("Ошибка scanf\n");
             return PARSE_ERROR;
         }
 
