@@ -56,5 +56,5 @@ error_t validation_acl_string(char * name, const char * const optarg)
     
     strcpy(name, optarg);
         
-    return SUCSESS;
+    return SUCCESS;
 }

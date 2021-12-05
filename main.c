@@ -7,6 +7,7 @@
 #include "getters.h"
 #include "validation_string.h"
 #include "errors.h"
+#include "file.h"
 
 #include "mystdlib.h"
 #include "mystring.h"
@@ -22,11 +23,11 @@ error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 int main(int argc, char* argv[])
 {
     // MIN -2147483648  MAX 2147483647
-    char num[] = "-2147483649";
+    /*char num[] = "-2147483648";
     int answer = 0;
 
-    printf("retrun - %d\n", string_to_int(&answer,num));
-    printf("int - %d\n", answer);
+    printf("retrun: %d\n", string_to_int(&answer,num));
+    printf("int: %d\n", answer);
 
     char * text = ";12;34;;3245;432;";//":12::34:::564:4568::546:87";
     
@@ -36,9 +37,10 @@ int main(int argc, char* argv[])
     while(s)
     {
         printf("%s\n", s);
-        free(s);
+        
         s = mystrtok(NULL, ';');
     }
+    free(s);*/
     
     ///////////
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
@@ -47,14 +49,14 @@ int main(int argc, char* argv[])
     if(argc > 1)
     {
         error_t err = parse_command_line_arg(&person, argc, argv);
-        if(err != SUCSESS) check_error(err);
+        if(err != SUCCESS) check_error(err);
     }
     else
     {
         error_t err = get_personal_data(&person);
-        if(err != SUCSESS) check_error(err);
+        if(err != SUCCESS) check_error(err);
         
-        err = save_file(&person);
+        err = save_binary_data(&person);
         if(err) check_error(err);
 
         print_personal_data(&person);
@@ -100,10 +102,11 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 		switch(option){
 			case 'n': // name
             {
+                if(add) printf("add\n");
 				if (optarg && add)
                 {
                     error_t err = validation_acl_string(p->name, optarg);
-                    if(err != SUCSESS) return err;
+                    if(err != SUCCESS) return err;
                 }
                 else
                 {
@@ -118,7 +121,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 				if (optarg && add)
                 {
                     error_t err = validation_acl_string(p->surname, optarg);
-                    if(err != SUCSESS) return err;
+                    if(err != SUCCESS) return err;
                 }
                 else
                 {
@@ -253,8 +256,9 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
             {
 				printf( "Можете запустить программу без аргументов и ввести данные вручную\n"
                         "Список доступных аргументов командной строки:\n"
-                        "--print для печати данных из файла"
-                        "--add для добавления новой записи. Далее опции разрешенные только после добавления add"
+                        "Допускается использование одной команды за запуск.\n"
+                        "--print для печати данных из файла\n"
+                        "--add для добавления новой записи. Далее опции разрешенные только после добавления add\n"
                         "-n YourName или --name YourName , имя латиницей не более %"PRIu8" символов\n"
                         "-s YourSurname или --surname YourSurname , фамилия латинцей не более %"PRIu8" символов\n"
                         "-a 20 или --age 20 , ваш возраст, от 18 до 125 лет\n"
@@ -273,13 +277,26 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 2: // --print
             {
-                person_t p;
-                error_t err = SUCSESS;
+                person_t* per = NULL;
+                error_t err = SUCCESS;
+                int count = 0;
+             
+                per = read_binary_data(&count, &err);
+ 
+                if(!per && !err)
+                { 
+                    printf("Файл пуст\n");
+                    exit(0);
+                }
 
-                err = read_file(&p);
-                if(err) check_error(err);
+                for(int i = 0; i < count; ++i)
+                {
+                    printf("\nЗапись #%d:\n", i + 1);
+                    print_personal_data(&per[i]);
+                }
 
-                print_personal_data(&p);
+                free(per);
+
                 exit(0);
             };
 
@@ -291,14 +308,14 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 		};
 	};
 
-    error_t err = SUCSESS;
+    error_t err = SUCCESS;
 
     // check parse args
-    if(p->name[0] == '\0')
+    if(p->name[0] == '\0') // && add
     {
         err = get_name(p->name, "Имя");
 
-        if(err != SUCSESS)
+        if(err != SUCCESS)
         {
             //PRINT_ERROR;
             check_error(err);
@@ -309,7 +326,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {
         err = get_name(p->surname, "Фамилия");
 
-        if(err != SUCSESS)
+        if(err != SUCCESS)
         {
             //PRINT_ERROR;
             check_error(err);
@@ -320,7 +337,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {
         err = get_age(&p->age);
         
-        if(err != SUCSESS)
+        if(err != SUCCESS)
         {
             //PRINT_ERROR;
             check_error(err);
@@ -332,7 +349,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {   
         err = get_height(&p->height);
         
-        if(err != SUCSESS)
+        if(err != SUCCESS)
         {
             //PRINT_ERROR;
             check_error(err);
@@ -344,7 +361,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {
         err = get_weight(&p->weight);
         
-        if(err != SUCSESS)
+        if(err != SUCCESS)
         {
             //PRINT_ERROR;
             check_error(err);
@@ -356,17 +373,17 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {
         err = get_gender(&p->gender);
         
-        if(err != SUCSESS)
+        if(err != SUCCESS)
         {
             //PRINT_ERROR;
             check_error(err);
         }
     }
-
-    err = save_file(p);
+    //if(add)
+    err = save_binary_data(p);
     if(err) check_error(err);
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -405,6 +422,6 @@ error_t print_personal_data(const person_t * const p)
         break;
     }
 
-    return SUCSESS;
+    return SUCCESS;
 }
 

@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "types.h"
-#include "mystring.h"
 #include "errors.h"
 
 #include "file.h"
@@ -18,7 +17,7 @@
 *   В случае ошибки записи возвращает -2.
 *   В случае успеха возвращает 0.
 */
-error_t save_file(person_t * person)
+static error_t save_file(person_t * person)
 {
     FILE * file = fopen(FILE_NAME, REWRITE_MODE);
     if(!file) 
@@ -44,7 +43,7 @@ error_t save_file(person_t * person)
 
     fclose(file);
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -55,7 +54,7 @@ error_t save_file(person_t * person)
 *   В случае ошибки чтения возвращает -3.
 *   В случае успеха возвращает 0.
 */
-error_t read_file(person_t * person)
+static error_t read_file(person_t * person)
 {
     FILE * file = fopen(FILE_NAME, READ_MODE);
     if(!file) 
@@ -100,5 +99,104 @@ error_t read_file(person_t * person)
     ptr = strtok(NULL, ";\n");
     if(ptr) person->gender = (uint8_t)strtoul(ptr, NULL, 0);
 
-    return SUCSESS;
+    return SUCCESS;
 }
+
+
+//////// binary //////////
+
+
+/*
+*   Сохраняет струтуру person в конец файла в бинарном виде.
+*   
+*   Возвращает NULL_PTR_ERROR, если передан нулевой указатель person.
+*              FILE_DESCRIPTOR_ERROR, если не удалось открыть или создать файл.
+*              WRITE_FILE_ERROR, если не удалось записать в файл данные.
+*              SUCCESS в случае успеха.
+*/
+error_t save_binary_data(person_t * person)
+{
+    if(!person)
+    {
+        PRINT_ERROR("Не передан аргумент person\n");
+        return NULL_PTR_ERROR;
+    }
+
+    FILE * file = fopen(FILE_NAME, "ab");
+    if(!file) 
+    {
+       PRINT_ERROR("Не удалось открыть файл: %s\n", FILE_NAME);
+       return FILE_DESCRIPTOR_ERROR;
+    }
+    
+
+    if(fwrite(person, sizeof(person_t), 1, file) != 1)
+    {
+        PRINT_ERROR("Ошибка записи стуктуры person в файл %s\n", FILE_NAME);
+        return WRITE_FILE_ERROR;
+    }
+
+    fclose(file);
+
+    return SUCCESS;
+}
+
+
+
+person_t * read_binary_data(int * count, error_t * err)
+{
+
+    if(!count || !err)
+    {
+        PRINT_ERROR("Переданы не все аргументы\n");
+        *err = NULL_PTR_ERROR;
+        return NULL;
+    }
+
+    FILE * file = fopen(FILE_NAME, "rb");
+    if(!file) 
+    {
+       PRINT_ERROR("Не удалось открыть файл: %s\n", FILE_NAME);
+
+       *err = FILE_DESCRIPTOR_ERROR;
+       return NULL;
+    }
+
+    *count = 0;
+
+    fseek(file, 0, SEEK_END);
+    *count = ftell(file) / sizeof(person_t);
+
+    fseek(file, 0, SEEK_SET);
+
+    if(*count == 0)
+    {
+        *err = SUCCESS;
+        return NULL;
+    }
+
+    person_t * person = malloc(sizeof(person_t) * *count);
+
+    if(!person)
+    {
+        PRINT_ERROR("Не удалось выделить память\n");
+        *err = NULL_PTR_ERROR;
+        return NULL;
+    }
+    
+    if(fread(person, sizeof(person_t), *count, file) != *count)
+    {
+        PRINT_ERROR("Ошибка чтения стуктуры person из файла %s\n", FILE_NAME);
+        fclose(file);
+
+        *err = WRITE_FILE_ERROR;
+        return NULL;
+    }
+
+    fclose(file);
+    
+    *err = SUCCESS;
+    return person;
+}
+
+

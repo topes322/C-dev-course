@@ -21,28 +21,28 @@ char * mystrtok(char * str, const char delimiter)
     static char * string = NULL;
 
     if(str == NULL && string == NULL)
-    {
-        //printf("return NULL\n"); 
         return NULL;
-    }
 
     if(str != NULL) 
-        string = str;
+    {
+        string = malloc(strlen(str) + 1);
+        if(!string)
+        {
+            printf("Не удалсь выделить память\n");
+            return NULL;
+        }
+        strcpy(string, str);
+    }
 
 
-
-    char * new_string = malloc(strlen(string) + 1);
-    //printf("strlen(string) = %d\n", strlen(string));
-
+    char * new_string;
     uint16_t i = 0;
     
     do
     {
-        for(; *string != '\0' && *string != delimiter; ++string, ++i)
-        {
-            new_string[i] = *string;
-            //printf("%c\t %d\n", new_string[i], i);
-        }
+        new_string = string;
+        for(; *string != '\0' && *string != delimiter; ++string, ++i);
+
         if (*string == delimiter) ++string;
         if (*string == '\0') break;
     } while (i == 0);
@@ -51,7 +51,7 @@ char * mystrtok(char * str, const char delimiter)
     if(*string == '\0')
         string = NULL;
     
-    new_string[i] = '\0';
+    *(new_string + i) = '\0';
 
    
     return new_string;

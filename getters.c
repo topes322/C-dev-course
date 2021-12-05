@@ -10,7 +10,7 @@
 error_t get_personal_data(person_t* data)
 {
     if(!data) return NULL_PTR_ERROR;
-    error_t err = SUCSESS;
+    error_t err = SUCCESS;
 
 
     err = get_name(data->name, "Имя");
@@ -36,7 +36,7 @@ error_t get_personal_data(person_t* data)
     if(err) return err;
     
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -54,7 +54,7 @@ error_t get_name(char * str, const char * const name)
         }
 
         // MAX_LEN - 1
-        if(scanf("%119s", str) != 1) 
+        if(scanf("%21s", str) != 1) 
         {
             PRINT_ERROR("Ошибка scanf\n");
             return PARSE_ERROR;
@@ -62,7 +62,7 @@ error_t get_name(char * str, const char * const name)
     }
     while (validation_string(str, name));
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -84,7 +84,7 @@ error_t get_age(uint8_t * age)
 
     } while (*age < 18 || *age > 125);
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -106,7 +106,7 @@ error_t get_height(uint16_t * height)
 
     } while(*height < 10 || *height > 500);
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -128,7 +128,7 @@ error_t get_weight(uint16_t * weight)
 
     } while(*weight < 10 || *weight > 500);
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
@@ -151,7 +151,7 @@ error_t get_gender(gender_t * gender)
 
     } while(*gender > FEMALE);
 
-    return SUCSESS;
+    return SUCCESS;
 }
 
 
