@@ -15,7 +15,7 @@
 *   Возвращает указатель на новую подстроку в случае нахождения разделителя.
 *   После возврата последней подстроки и нахождения нуль-символа возвращает нулевой указатель.
 */
-char * mystrtok(char * str, const char delimiter)
+char * mystrtok(const char * const str, const char delimiter)
 {   
 
     static char * string = NULL;
