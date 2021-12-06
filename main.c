@@ -22,14 +22,8 @@ error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 
 int main(int argc, char* argv[])
 {
-    // MIN -2147483648  MAX 2147483647
-    /*char num[] = "-2147483648";
-    int answer = 0;
 
-    printf("retrun: %d\n", string_to_int(&answer,num));
-    printf("int: %d\n", answer);
-
-    char * text = ";12;34;;3245;432;";//":12::34:::564:4568::546:87";
+    char * text = ";12;34;;3245;432;";
     
     char * s = mystrtok( text, ';');
     
@@ -40,9 +34,10 @@ int main(int argc, char* argv[])
         
         s = mystrtok(NULL, ';');
     }
-    free(s);*/
-    
-    ///////////
+    free(s);
+
+    // *****
+
     person_t person = {{'\0'}, {'\0'}, 0 , 0 , 0, UNDEFINED };
 
 
@@ -51,7 +46,7 @@ int main(int argc, char* argv[])
         error_t err = parse_command_line_arg(&person, argc, argv);
         if(err != SUCCESS) check_error(err);
     }
-    else
+    /*else
     {
         error_t err = get_personal_data(&person);
         if(err != SUCCESS) check_error(err);
@@ -60,7 +55,7 @@ int main(int argc, char* argv[])
         if(err) check_error(err);
 
         print_personal_data(&person);
-    }
+    }*/
 
     return 0;
 }
@@ -73,7 +68,8 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 {
     uint16_t height = 0;
     uint16_t weight = 0;
-    uint8_t add = 0;
+    uint8_t flag_add = 0;
+    uint8_t flag_print = 0;
 
     const char* short_options = "n:s:a:h:w:g:";
     
@@ -100,11 +96,13 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
     {
 
 		switch(option){
+
 			case 'n': // name
             {
-                if(add) printf("add\n");
-				if (optarg && add)
+				if (optarg)
                 {
+                    if(!flag_add) break;
+                    
                     error_t err = validation_acl_string(p->name, optarg);
                     if(err != SUCCESS) return err;
                 }
@@ -118,8 +116,10 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
 			case 's': // surname
             {
-				if (optarg && add)
+				if (optarg)
                 {
+                    if(!flag_add) break;
+                    
                     error_t err = validation_acl_string(p->surname, optarg);
                     if(err != SUCCESS) return err;
                 }
@@ -133,8 +133,9 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 	
 			case 'a': // age
             {
-                if (optarg && add)
+                if (optarg)
                 {
+                    if(!flag_add) break;
 
                     int i = 0; 
                     while(optarg[i] != '\0') 
@@ -163,8 +164,10 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 'h': // height
             {
-                if(optarg && add)
+                if(optarg)
                 {
+                    if(!flag_add) break;
+
                     int i = 0; 
                     while(optarg[i] != '\0') 
                         if( optarg[i++] < '0' || optarg[i] > '9' ) 
@@ -193,8 +196,10 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 'w': // weight
             {
-                if(optarg && add)
+                if(optarg)
                 {
+                    if(!flag_add) break;
+
                     int i = 0; 
                     while(optarg[i] != '\0') 
                     {
@@ -225,8 +230,10 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
             case 'g': // gender
             {
-                if (optarg && add)
+                if (optarg)
                 {
+                    if(!flag_add) break;
+
                     int i = 0; 
 
                         while(optarg[i] != '\0') 
@@ -252,13 +259,14 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
                 break;
             };
             
+            // --help
             case 1: 
             {
 				printf( "Можете запустить программу без аргументов и ввести данные вручную\n"
                         "Список доступных аргументов командной строки:\n"
                         "Допускается использование одной команды за запуск.\n"
                         "--print для печати данных из файла\n"
-                        "--add для добавления новой записи. Далее опции разрешенные только после добавления add\n"
+                        "--add для добавления новой записи. Далее опции разрешенные только при добавлении опции add\n"
                         "-n YourName или --name YourName , имя латиницей не более %"PRIu8" символов\n"
                         "-s YourSurname или --surname YourSurname , фамилия латинцей не более %"PRIu8" символов\n"
                         "-a 20 или --age 20 , ваш возраст, от 18 до 125 лет\n"
@@ -269,35 +277,22 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 				exit(0);
 			};
 
-            case 3: // --add
+            // --add
+            case 3: 
             {
-                add = 1;
+                if(!flag_add)
+                {
+                    flag_add = 1;
+                    optind = 0;
+                }
                 break;
             };
 
-            case 2: // --print
+            // --print
+            case 2: 
             {
-                person_t* per = NULL;
-                error_t err = SUCCESS;
-                int count = 0;
-             
-                per = read_binary_data(&count, &err);
- 
-                if(!per && !err)
-                { 
-                    printf("Файл пуст\n");
-                    exit(0);
-                }
-
-                for(int i = 0; i < count; ++i)
-                {
-                    printf("\nЗапись #%d:\n", i + 1);
-                    print_personal_data(&per[i]);
-                }
-
-                free(per);
-
-                exit(0);
+                flag_print = 1;
+                break;
             };
 
 			case '?': default: {
@@ -310,78 +305,100 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
 
     error_t err = SUCCESS;
 
-    // check parse args
-    if(p->name[0] == '\0') // && add
+    if(flag_add)
     {
-        err = get_name(p->name, "Имя");
-
-        if(err != SUCCESS)
+        // check parse args
+        // name
+        if(p->name[0] == '\0')
         {
-            //PRINT_ERROR;
-            check_error(err);
+            err = get_name(p->name, "Имя");
+
+            if(err != SUCCESS)
+                check_error(err);
+
         }
-    }
 
-    if(p->surname[0] == '\0')
-    {
-        err = get_name(p->surname, "Фамилия");
-
-        if(err != SUCCESS)
+        // surname
+        if(p->surname[0] == '\0')
         {
-            //PRINT_ERROR;
-            check_error(err);
-        }
-    }
+            err = get_name(p->surname, "Фамилия");
 
-    if(p->age == 0) 
-    {
-        err = get_age(&p->age);
+            if(err != SUCCESS)
+                check_error(err);
+
+        }
+
+        // age
+        if(p->age == 0) 
+        {
+            err = get_age(&p->age);
+            
+            if(err != SUCCESS)
+                check_error(err);
+
+        }
+
+        // height
+        if(height == 0) 
+        {   
+            err = get_height(&p->height);
+            
+            if(err != SUCCESS)
+                check_error(err);
+
+        }
+        else p->height = height;
         
-        if(err != SUCCESS)
+        // weight
+        if(weight == 0) 
         {
-            //PRINT_ERROR;
-            check_error(err);
-        }
-    }
+            err = get_weight(&p->weight);
+            
+            if(err != SUCCESS)
+                check_error(err);
 
+        }
+        else p->weight = weight;
+
+        // gender
+        if(p->gender == UNDEFINED || p->gender > FEMALE) 
+        {
+            err = get_gender(&p->gender);
+            
+            if(err != SUCCESS)
+                check_error(err);
+
+        }
+
+        // save
+        err = save_binary_data(p);
+        if(err) check_error(err);
+    }
     
-    if(height == 0) 
-    {   
-        err = get_height(&p->height);
-        
-        if(err != SUCCESS)
-        {
-            //PRINT_ERROR;
-            check_error(err);
-        }
-    }
-    else p->height = height;
-    
-    if(weight == 0) 
-    {
-        err = get_weight(&p->weight);
-        
-        if(err != SUCCESS)
-        {
-            //PRINT_ERROR;
-            check_error(err);
-        }
-    }
-    else p->weight = weight;
 
-    if(p->gender == UNDEFINED || p->gender > FEMALE) 
+    // print
+    if(flag_print)
     {
-        err = get_gender(&p->gender);
+        person_t* per = NULL;
+        err = SUCCESS;
+        int count = 0;
         
-        if(err != SUCCESS)
-        {
-            //PRINT_ERROR;
-            check_error(err);
+        per = read_binary_data(&count, &err);
+
+        if(!per && !err)
+        { 
+            printf("Файл пуст\n");
+            return SUCCESS;
         }
+
+        for(int i = 0; i < count; ++i)
+        {
+            printf("\nЗапись #%d:\n", i + 1);
+            print_personal_data(&per[i]);
+        }
+
+        free(per);
     }
-    //if(add)
-    err = save_binary_data(p);
-    if(err) check_error(err);
 
     return SUCCESS;
 }
