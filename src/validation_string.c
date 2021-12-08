@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "types.h"
-#include "errors.h"
+#include "../includes/types.h"
+#include "../includes/errors.h"
 
 
 

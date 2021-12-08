@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "getters.h"
-#include "types.h"
-#include "errors.h"
+#include "../includes/getters.h"
+#include "../includes/types.h"
+#include "../includes/errors.h"
 
 
 

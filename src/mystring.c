@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "mystring.h"
+#include "../includes/mystring.h"
 
 
 

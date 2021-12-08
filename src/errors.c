@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "errors.h"
+#include "../includes/errors.h"
 
 // exit on error, print type error
 void check_error(const error_t err)

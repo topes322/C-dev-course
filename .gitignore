@@ -6,3 +6,5 @@ test2.c
 person.txt
 humans.txt
 test.h
+debug
+release

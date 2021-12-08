@@ -3,14 +3,14 @@
 #include <getopt.h> 
 #include <stdlib.h>
 
-#include "types.h"
-#include "getters.h"
-#include "validation_string.h"
-#include "errors.h"
-#include "file.h"
+#include "../includes/types.h"
+#include "../includes/getters.h"
+#include "../includes/validation_string.h"
+#include "../includes/errors.h"
+#include "../includes/file.h"
 
-#include "mystdlib.h"
-#include "mystring.h"
+#include "../includes/mystdlib.h"
+#include "../includes/mystring.h"
 
 
 error_t print_personal_data( const person_t* const );
@@ -373,6 +373,7 @@ error_t parse_command_line_arg(person_t * p, const int argc, const char * const 
         // save
         err = save_binary_data(p);
         if(err) check_error(err);
+        printf("Запись добавлена\n");
     }
     
 

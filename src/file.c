@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "types.h"
-#include "errors.h"
+#include "../includes/types.h"
+#include "../includes/errors.h"
 
-#include "file.h"
+#include "../includes/file.h"
 
 
 
