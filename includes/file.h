@@ -6,7 +6,7 @@
 #include "types.h"
 #include "errors.h"
 
-#define FILE_NAME "person.txt"
+#define FILE_NAME "person.bin"
 #define REWRITE_MODE "w"
 #define READ_MODE "r"
 

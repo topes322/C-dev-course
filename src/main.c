@@ -23,7 +23,7 @@ error_t parse_command_line_arg(person_t*, const  int, const  char * const []);
 int main(int argc, char* argv[])
 {
 
-    char * text = ";12;34;;3245;432;";
+    /*char * text = ";12;34;;3245;432;";
     
     char * s = mystrtok( text, ';');
     
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
         
         s = mystrtok(NULL, ';');
     }
-    free(s);
+    free(s);*/
 
     // *****
 

@@ -1,10 +1,6 @@
 a.out
-test.c
 .vscode
-start
-test2.c
-person.txt
+person.bin
 humans.txt
-test.h
 debug
 release

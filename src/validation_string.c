@@ -22,12 +22,13 @@ uint8_t validation_string(char * str, const char * const name)
     uint8_t i = 0;
     while(str[i] != '\0')
     {
-        if(!(str[i++] >= 'a' && str[i] <= 'z') 
+        if(!(str[i] >= 'a' && str[i] <= 'z') 
         && !(str[i] >= 'A' && str[i] <= 'Z'))
         {
             printf("Используйте только символы латиницы. Попробуйте еще раз.\n%s(не более %"PRIu8" смволов): ", name, MAX_LEN - 2);
             return 2;
         }
+        i++;
     }
 
     return 0;
@@ -46,12 +47,13 @@ error_t validation_acl_string(char * name, const char * const optarg)
     uint8_t i = 0;
     while(optarg[i] != '\0')
     {
-        if(!(optarg[i++] >= 'a' && optarg[i] <= 'z') 
+        if(!(optarg[i] >= 'a' && optarg[i] <= 'z') 
         && !(optarg[i] >= 'A' && optarg[i] <= 'Z'))
         {
             PRINT_ERROR("Используйте только символы латиницы для полей name и surname.\n");
             return PARSE_ACL_ERROR;
         }
+        i++;
     }
     
     strcpy(name, optarg);
