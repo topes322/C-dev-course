@@ -2,28 +2,27 @@
 objects = 	main.o errors.o file.o getters.o \
 	 		mystring.o mystdlib.o validation_string.o
 
-rel = 	@gcc -o release/test -O2 main.o errors.o file.o getters.o \
-		mystring.o mystdlib.o validation_string.o
+rel = 	@gcc -o release/test -O2 $(objects)
 
-deb = 	gcc -o debug/test -g -O0 -Wall -Wextra \
-		main.o errors.o file.o getters.o \
-		mystring.o mystdlib.o validation_string.o
+deb = 	@gcc -o debug/test -g -O0 -Wall -Wextra $(objects)
 
 
-all: 	$(objects)
-		$(rel)
+all: 	debug release clean
+		
 
 
-debug: $(objects)
+debug:  $(objects)
+		@mkdir -p debug
 		$(deb)
 
 
 release: $(objects)
+		@mkdir -p release
 		$(rel)
 
 
 #tests
-check:	all clean
+check:	all
 #test1
 		@cp test_files/person.bin.print1 person.bin
 		@release/test --print > out1
